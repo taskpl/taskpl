@@ -1,4 +1,1 @@
-toml
-fastapi
-pydantic
-uvicorn
+.
