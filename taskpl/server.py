@@ -1,18 +1,10 @@
 import uvicorn
+import os
 from fastapi import FastAPI
-from pydantic import BaseModel
 
 from taskpl.manager import JobManager
 from taskpl.task import Task
 from taskpl.config import global_config
-
-
-class JsonRequestModel(BaseModel):
-    """ for parsing args of request only """
-
-    # for matching models
-    task_name: str = ""
-    job_name: str = ""
 
 
 app = FastAPI()
@@ -23,36 +15,61 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.post("/api/v1/job/new")
-def job_new(*, request: JsonRequestModel):
+# todo: use decorator for error handler
+@app.post("/api/v1/job/single")
+def job_create(*, task_name: str, job_name: str):
     try:
-        task_name = request.task_name
-        job_name = request.job_name
-
         # find
         task = Task.get_task_by_name(task_name)
         # new
         manager = JobManager()
-        job = manager.query_job(task, job_name)
+        job = manager.query_single_job(task, job_name)
         job.init()
         return job
     except Exception as e:
         return {"error": str(e)}
 
 
-@app.get("/api/v1/job/query")
-def job_query(*, request: JsonRequestModel):
+@app.get("/api/v1/job/single")
+def job_retrieve(*, task_name: str, job_name: str):
     try:
-        task_name = request.task_name
-        job_name = request.job_name
-
         # find
         task = Task.get_task_by_name(task_name)
         # new
         manager = JobManager()
-        job = manager.query_job(task, job_name)
-        assert job.is_inited(), f"job {job_name} is not existed"
+        job = manager.query_single_job(task, job_name)
         return job.status()
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/v1/job/all")
+def job_all_retrieve(*, task_name: str):
+    try:
+        # find
+        task = Task.get_task_by_name(task_name)
+        # new
+        manager = JobManager()
+        # todo job object contains too much contents
+        return manager.query_all_job(task)
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/v1/task/single")
+def task_retrieve(*, task_name: str):
+    try:
+        return Task.get_task_by_name(task_name)
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/v1/task/all")
+def task_all_retrieve():
+    try:
+        # todo this design looks a little weird
+        # todo return value is a file list...
+        return os.listdir(global_config.WORKSPACE)
     except Exception as e:
         return {"error": str(e)}
 

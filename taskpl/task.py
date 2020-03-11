@@ -31,6 +31,8 @@ class Task(object):
         self.raw_dict: dict = dict()
         self.config: typing.Optional[TaskConfig] = None
         self.pipeline: typing.Optional[TaskPipeline] = None
+        # todo should be a object?
+        self.workspace: typing.Optional[str] = None
 
     def load(self, path: str):
         # file -> object
@@ -42,6 +44,7 @@ class Task(object):
         self.config = TaskConfig(self.raw_dict[TaskConfig.LABEL])
         self.pipeline = TaskPipeline(self.raw_dict[TaskPipeline.LABEL])
         self.name = self.config.name
+        self.workspace = os.path.join(global_config.WORKSPACE, self.name)
 
     @classmethod
     def get_task_by_name(cls, task_name: str) -> "Task":

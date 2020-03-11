@@ -3,6 +3,7 @@ from taskpl.config import global_config
 
 import os
 import copy
+import typing
 
 
 class Job(object):
@@ -11,6 +12,7 @@ class Job(object):
         self.job_name: str = job_name
         self.inited: bool = False
         # workspace
+        # todo weird!!
         space = os.path.join(global_config.WORKSPACE, self.task_type.name, self.job_name)
         self.workspace: str = space
 
@@ -38,5 +40,13 @@ class Job(object):
 
 
 class JobManager(object):
-    def query_job(self, task_type: Task, job_name: str) -> Job:
-        return Job(task_type, job_name)
+    def query_single_job(self, task_type: Task, job_name: str) -> Job:
+        if job_name in os.listdir(task_type.workspace):
+            return Job(task_type, job_name)
+        raise FileNotFoundError(f"job {job_name} is not existed")
+
+    def query_all_job(self, task_type: Task) -> typing.List[Job]:
+        return [
+            Job(task_type, each)
+            for each in os.listdir(task_type.workspace)
+        ]
