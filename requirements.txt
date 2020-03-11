@@ -1,1 +1,4 @@
 toml
+fastapi
+pydantic
+uvicorn

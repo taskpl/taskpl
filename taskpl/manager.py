@@ -14,6 +14,7 @@ class Job(object):
     def init(self):
         # workspace
         space = os.path.join(global_config.WORKSPACE, self.task_type.name, self.job_name)
+        assert not os.path.isdir(space), f"path {space} has been used"
         os.makedirs(space, exist_ok=True)
         self.workspace = space
 
