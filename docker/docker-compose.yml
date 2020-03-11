@@ -1,0 +1,22 @@
+version: '3'
+services:
+  filebrowser:
+    container_name: filebrowser
+    image: filebrowser/filebrowser
+    restart: always
+    volumes:
+      - taskpl_workspace:/srv
+    ports:
+      - "9646:80"
+
+  taskpl:
+    container_name: taskpl
+    image: williamfzc/taskpl
+    restart: always
+    volumes:
+      - taskpl_workspace:/taskpl_workspace
+    ports:
+      - "9410:9410"
+
+volumes:
+  taskpl_workspace:
