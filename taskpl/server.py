@@ -1,7 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
 from pydantic import BaseModel
-import os
 
 from taskpl.manager import JobManager
 from taskpl.task import Task
@@ -24,21 +23,36 @@ def read_root():
     return {"Hello": "World"}
 
 
-@app.post("/api/v1/task/new")
-def task_new(*, request: JsonRequestModel):
+@app.post("/api/v1/job/new")
+def job_new(*, request: JsonRequestModel):
     try:
         task_name = request.task_name
         job_name = request.job_name
 
         # find
-        task = Task()
-        task_config_path = os.path.join(global_config.SERVER_TASK_HOME, task_name) + ".toml"
-        task.load(task_config_path)
+        task = Task.get_task_by_name(task_name)
         # new
         manager = JobManager()
-        job = manager.new_job(task, job_name)
+        job = manager.query_job(task, job_name)
         job.init()
         return job
+    except Exception as e:
+        return {"error": str(e)}
+
+
+@app.get("/api/v1/job/query")
+def job_query(*, request: JsonRequestModel):
+    try:
+        task_name = request.task_name
+        job_name = request.job_name
+
+        # find
+        task = Task.get_task_by_name(task_name)
+        # new
+        manager = JobManager()
+        job = manager.query_job(task, job_name)
+        assert job.is_inited(), f"job {job_name} is not existed"
+        return job.status()
     except Exception as e:
         return {"error": str(e)}
 

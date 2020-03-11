@@ -3,6 +3,8 @@ import toml
 import typing
 from collections import OrderedDict
 
+from taskpl.config import global_config
+
 
 class TaskConfig(object):
     LABEL = "config"
@@ -40,3 +42,10 @@ class Task(object):
         self.config = TaskConfig(self.raw_dict[TaskConfig.LABEL])
         self.pipeline = TaskPipeline(self.raw_dict[TaskPipeline.LABEL])
         self.name = self.config.name
+
+    @classmethod
+    def get_task_by_name(cls, task_name: str) -> "Task":
+        task = Task()
+        task_config_path = os.path.join(global_config.SERVER_TASK_HOME, task_name) + ".toml"
+        task.load(task_config_path)
+        return task
