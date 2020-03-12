@@ -69,8 +69,11 @@ def task_retrieve(*, task_name: str):
 def task_all_retrieve():
     try:
         # todo this design looks a little weird
-        # todo return value is a file list...
-        return os.listdir(global_config.WORKSPACE)
+        return [
+            os.path.splitext(each)[0]
+            for each in os.listdir(global_config.WORKSPACE)
+            if each.endswith("toml")
+        ]
     except Exception as e:
         return {"error": str(e)}
 
