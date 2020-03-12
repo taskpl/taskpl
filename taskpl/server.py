@@ -6,7 +6,6 @@ from taskpl.manager import JobManager, Job
 from taskpl.task import Task
 from taskpl.config import global_config
 
-
 app = FastAPI()
 
 
@@ -79,7 +78,10 @@ def task_all_retrieve():
 
 
 class Server(object):
+    def __init__(self):
+        self.app = app
+
     def start(self):
         uvicorn.run(
-            app, host="0.0.0.0", port=global_config.SERVER_PORT
+            self.app, host="0.0.0.0", port=global_config.SERVER_PORT
         )
