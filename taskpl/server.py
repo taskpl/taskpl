@@ -70,7 +70,7 @@ def task_all_retrieve():
         # todo this design looks a little weird
         return [
             os.path.splitext(each)[0]
-            for each in os.listdir(global_config.WORKSPACE)
+            for each in os.listdir(global_config.SERVER_TASK_HOME)
             if each.endswith("toml")
         ]
     except Exception as e:
