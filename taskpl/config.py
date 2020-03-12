@@ -9,6 +9,9 @@ class _Config(object):
     # server
     SERVER_PORT = 9410
     SERVER_TASK_HOME = "."
+    # task
+    TASK_ROOT_NAME = "root"
+    TASK_CONFIG_FILE_TYPE = "toml"
 
 
 global_config = _Config()
