@@ -79,6 +79,6 @@ class Task(object):
     @classmethod
     def get_task_by_name(cls, task_name: str) -> "Task":
         task = Task()
-        task_config_path = os.path.join(global_config.SERVER_TASK_HOME, task_name) + "." + global_config.TASK_CONFIG_FILE_SUFFIX
+        task_config_path = os.path.join(global_config.SERVER_TASK_HOME, task_name) + "." + global_config.TASK_CONFIG_FILE_TYPE
         task.load(task_config_path)
         return task
