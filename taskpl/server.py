@@ -2,7 +2,7 @@ import uvicorn
 import os
 from fastapi import FastAPI
 
-from taskpl.manager import JobManager
+from taskpl.manager import JobManager, Job
 from taskpl.task import Task
 from taskpl.config import global_config
 
@@ -23,7 +23,8 @@ def job_create(*, task_name: str, job_name: str):
         task = Task.get_task_by_name(task_name)
         # new
         manager = JobManager()
-        job = manager.query_single_job(task, job_name)
+        assert not manager.is_job_existed(task, job_name), f"job {job_name} already existed"
+        job = Job(task, job_name)
         job.init()
         return job
     except Exception as e:

@@ -40,6 +40,13 @@ class Job(object):
 
 
 class JobManager(object):
+    def is_job_existed(self, task_type: Task, job_name: str) -> bool:
+        try:
+            self.query_single_job(task_type, job_name)
+            return True
+        except FileNotFoundError:
+            return False
+
     def query_single_job(self, task_type: Task, job_name: str) -> Job:
         if job_name in os.listdir(task_type.workspace):
             return Job(task_type, job_name)
