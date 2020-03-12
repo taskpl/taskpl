@@ -38,7 +38,7 @@ class Task(object):
         # file -> object
         assert os.path.isfile(path), f"no file found in {path}"
         self.path = path
-        with open(self.path) as f:
+        with open(self.path, encoding=global_config.CHARSET) as f:
             self.raw_dict = toml.load(f)
         # parse
         self.config = TaskConfig(self.raw_dict[TaskConfig.LABEL])
