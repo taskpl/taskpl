@@ -15,9 +15,12 @@ class TaskConfig(object):
 
 
 class TaskPipelineStage(object):
-    def __init__(self, name: str, sub_stage: typing.List["TaskPipelineStage"]):
+    def __init__(self, name: str, sub_stage: typing.List["TaskPipelineStage"], parent_stage_name: str = None):
         self.name = name
         self.sub_stages = sub_stage
+        # avoid recursive function calling
+        # so use string, not an object
+        self.parent_stage_name = parent_stage_name
 
         # optional
         self.desc: str = ""
@@ -29,11 +32,11 @@ class TaskPipelineStage(object):
 
     @classmethod
     def create_stage_tree(cls, data: dict) -> "TaskPipelineStage":
-        def _parse_data(name: str, cur_node: dict) -> "TaskPipelineStage":
-            result = TaskPipelineStage(name, [])
+        def _parse_data(name: str, cur_node: dict, parent_node: TaskPipelineStage = None) -> "TaskPipelineStage":
+            result = TaskPipelineStage(name, [], parent_node.name if parent_node else None)
             for each_stage_name, content in cur_node.items():
                 if isinstance(content, dict):
-                    sub_stage = _parse_data(each_stage_name, content)
+                    sub_stage = _parse_data(each_stage_name, content, result)
                     result.sub_stages.append(sub_stage)
                 else:
                     # end node
@@ -50,6 +53,17 @@ class TaskPipeline(object):
     def __init__(self, data: OrderedDict):
         self.data: OrderedDict = data
         self.root_node = TaskPipelineStage.create_stage_tree(data)
+
+    def get_stage_by_name(self, name: str) -> TaskPipelineStage:
+        def _inner(cur_node: TaskPipelineStage):
+            if name == cur_node.name:
+                return cur_node
+            for each in cur_node.sub_stages:
+                res = _inner(each)
+                # found?
+                if res:
+                    return res
+        return _inner(self.root_node)
 
 
 class Task(object):
