@@ -22,7 +22,9 @@ def job_create(*, task_name: str, job_name: str):
         task = Task.get_task_by_name(task_name)
         # new
         manager = JobManager()
-        assert not manager.is_job_existed(task, job_name), f"job {job_name} already existed"
+        assert not manager.is_job_existed(
+            task, job_name
+        ), f"job {job_name} already existed"
         job = Job(task, job_name)
         job.init()
         return job
@@ -82,6 +84,4 @@ class Server(object):
         self.app = app
 
     def start(self):
-        uvicorn.run(
-            self.app, host="0.0.0.0", port=global_config.SERVER_PORT
-        )
+        uvicorn.run(self.app, host="0.0.0.0", port=global_config.SERVER_PORT)

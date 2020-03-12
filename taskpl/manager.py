@@ -13,7 +13,9 @@ class Job(object):
         self.inited: bool = False
         # workspace
         # todo weird!!
-        space = os.path.join(global_config.WORKSPACE, self.task_type.name, self.job_name)
+        space = os.path.join(
+            global_config.WORKSPACE, self.task_type.name, self.job_name
+        )
         self.workspace: str = space
 
     def is_inited(self) -> bool:
@@ -34,6 +36,7 @@ class Job(object):
                     os.makedirs(sub_path, exist_ok=True)
                     _create_dirs(v, sub_path)
                 # do nothing if end
+
         _create_dirs(self.task_type.pipeline.data, self.workspace)
 
     def status(self) -> dict:
@@ -73,7 +76,4 @@ class JobManager(object):
         raise FileNotFoundError(f"job {job_name} is not existed")
 
     def query_all_job(self, task_type: Task) -> typing.List[Job]:
-        return [
-            Job(task_type, each)
-            for each in os.listdir(task_type.workspace)
-        ]
+        return [Job(task_type, each) for each in os.listdir(task_type.workspace)]
