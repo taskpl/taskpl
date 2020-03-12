@@ -21,22 +21,42 @@ class Job(object):
 
     def init(self):
         # workspace
+        os.makedirs(os.path.dirname(self.workspace), exist_ok=True)
         os.makedirs(self.workspace)
 
         # sub dirs
-        # todo multiple layers?
-        for each in self.task_type.pipeline.data.keys():
-            sub_path = os.path.join(self.workspace, each)
-            os.makedirs(sub_path, exist_ok=True)
+        def _create_dirs(stage_dict: dict, cur_path: str):
+            for k, v in stage_dict.items():
+                # not the end?
+                if isinstance(v, dict):
+                    # cur layer
+                    sub_path = os.path.join(cur_path, k)
+                    os.makedirs(sub_path, exist_ok=True)
+                    _create_dirs(v, sub_path)
+                # do nothing if end
+        _create_dirs(self.task_type.pipeline.data, self.workspace)
 
     def status(self) -> dict:
-        # todo multiple layers?
-        # todo temp design
-        result = copy.deepcopy(self.task_type.pipeline.data)
-        for each_stage in os.listdir(self.workspace):
-            sub_path = os.path.join(self.workspace, each_stage)
-            result[each_stage]["result"] = bool(os.listdir(sub_path))
-        return result
+        stage_dict = copy.deepcopy(self.task_type.pipeline.data)
+
+        for cur_dir, cur_sub_dirs, cur_files in os.walk(self.workspace):
+            cur_dir = cur_dir.replace(self.workspace, "")
+            cur_dict = stage_dict
+            for each in cur_dir.split(os.sep):
+                # the first is always empty
+                if not each:
+                    continue
+                # ignore error
+                if each in cur_dict:
+                    tmp = cur_dict[each]
+                    if not isinstance(tmp, dict):
+                        break
+                    cur_dict = tmp
+            else:
+                # todo: filter?
+                cur_dict["result"] = bool(cur_files) or bool(cur_sub_dirs)
+
+        return stage_dict
 
 
 class JobManager(object):
