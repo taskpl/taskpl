@@ -80,6 +80,7 @@ class Job(object):
 
 class JobManager(object):
     """ get status from disk """
+
     def is_job_existed(self, task_type: Task, job_name: str) -> bool:
         try:
             self.query_single_job(task_type, job_name)
