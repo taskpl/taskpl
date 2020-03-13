@@ -8,7 +8,23 @@ from loguru import logger
 class JobPipelineStage(TaskPipelineStage):
     def __init__(self, *args, **kwargs):
         super(JobPipelineStage, self).__init__(*args, **kwargs)
-        self.result = None
+        self.result: typing.Any = None
+        self.workspace: str = ""
+
+    def init_workspace(self):
+        logger.debug(f"init job workspace: {self.name}")
+        if not self.workspace:
+            logger.warning(f"job {self.name} 's workspace is empty")
+            return
+        os.makedirs(self.workspace, exist_ok=True)
+
+    def check_workspace(self):
+        # check and update result
+        # todo more filter here
+        if not self.workspace:
+            logger.warning(f"job {self.name} 's workspace is empty")
+            return
+        self.result = bool(os.listdir(self.workspace))
 
 
 class JobPipeline(TaskPipeline):
@@ -17,52 +33,48 @@ class JobPipeline(TaskPipeline):
 
 class Job(object):
     def __init__(self, task_type: Task, job_name: str):
+        # init from task
         self.task_type: Task = task_type
         self.job_pipeline = JobPipeline(task_type.pipeline.data)
         # extend task
         self.job_name: str = job_name
-        self.inited: bool = False
         # workspace
         self.workspace: str = os.path.join(self.task_type.workspace, job_name)
+        self.bind_workspace()
+
         logger.info(f"job {job_name}: {self.__dict__}")
 
+    def bind_workspace(self):
+        # bind workspaces to stages
+        for cur_dir, cur_sub_dirs, cur_files in os.walk(self.workspace):
+            cur_dir = cur_dir.replace(self.workspace + os.sep, "")
+            for each in cur_dir.split(os.sep):
+                # get current stage
+                cur_stage = self.job_pipeline.get_stage_by_name(each)
+                if cur_stage:
+                    # now we have stage and its workspace
+                    full_path = os.path.join(self.workspace, cur_dir)
+                    logger.debug(f"bind {full_path} to {cur_stage}")
+                    cur_stage.workspace = full_path
+
     def is_inited(self) -> bool:
-        return os.path.isdir(self.workspace)
+        return os.path.isdir(self.workspace) and bool(os.listdir(self.workspace))
 
     def init(self):
         """ create dirs """
         # workspace
         os.makedirs(os.path.dirname(self.workspace), exist_ok=True)
-        os.makedirs(self.workspace)
+        os.makedirs(self.workspace, exist_ok=True)
 
-        # sub dirs
-        def _create_dirs(stage_dict: dict, cur_path: str):
-            for k, v in stage_dict.items():
-                # not the end?
-                if isinstance(v, dict):
-                    # cur layer
-                    sub_path = os.path.join(cur_path, k)
-                    os.makedirs(sub_path, exist_ok=True)
-                    _create_dirs(v, sub_path)
-                # do nothing if end
+        for each in self.job_pipeline.loop_stages():
+            each.init_workspace()
 
-        _create_dirs(self.job_pipeline.data, self.workspace)
+    def update_status(self):
+        for each in self.job_pipeline.loop_stages():
+            each.check_workspace()
 
-    def status(self) -> dict:
-        for cur_dir, cur_sub_dirs, cur_files in os.walk(self.workspace):
-            cur_dir = cur_dir.replace(self.workspace, "")
-            for each in cur_dir.split(os.sep):
-                # the first is always empty
-                if not each:
-                    continue
-                # get current stage
-                cur_stage = self.job_pipeline.get_stage_by_name(each)
-                if cur_stage:
-                    # now we have stage and its workspace
-                    logger.debug(f"current workspace: {cur_dir}")
-                    logger.debug(f"current stage: {cur_stage}")
-                    cur_stage.result = bool(cur_files) or bool(cur_sub_dirs)
-
+    def status(self) -> JobPipelineStage:
+        self.update_status()
         return self.job_pipeline.root_node
 
 

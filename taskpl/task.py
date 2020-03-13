@@ -63,6 +63,13 @@ class TaskPipeline(object):
         self.data: OrderedDict = data
         self.root_node = TaskPipelineStage.create_stage_tree(data, self.STAGE_KLS)
 
+    def loop_stages(self):
+        def _loop_node(node: TaskPipelineStage):
+            yield node
+            for each in node.sub_stages:
+                yield from _loop_node(each)
+        return _loop_node(self.root_node)
+
     def get_stage_by_name(self, name: str) -> TaskPipelineStage:
         def _inner(cur_node: TaskPipelineStage):
             if name == cur_node.name:
