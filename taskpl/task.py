@@ -27,13 +27,16 @@ class TaskPipelineStage(object):
         self.strict: bool = True
 
     def inject_kwargs(self, **kwargs):
-        # optional fields
-        self.__dict__.update(kwargs)
+        # ignore sub dict
+        for k, v in kwargs.items():
+            # only allow these types
+            if isinstance(v, (str, int, list)):
+                self.__dict__[k] = v
 
     @classmethod
-    def create_stage_tree(cls, data: dict) -> "TaskPipelineStage":
+    def create_stage_tree(cls, data: dict, stage_kls: typing.Type["TaskPipelineStage"]) -> "TaskPipelineStage":
         def _parse_data(name: str, cur_node: dict, parent_node: TaskPipelineStage = None) -> "TaskPipelineStage":
-            result = TaskPipelineStage(name, [], parent_node.name if parent_node else None)
+            result = stage_kls(name, [], parent_node.name if parent_node else None)
             for each_stage_name, content in cur_node.items():
                 if isinstance(content, dict):
                     sub_stage = _parse_data(each_stage_name, content, result)
@@ -45,14 +48,20 @@ class TaskPipelineStage(object):
 
         return _parse_data(global_config.TASK_ROOT_NAME, data)
 
+    def __str__(self):
+        return f"<PipelineStage name={self.name} id={id(self)}>"
+
+    __repr__ = __str__
+
 
 class TaskPipeline(object):
     LABEL = "pipeline"
     ROOT_NAME = "root"
+    STAGE_KLS = TaskPipelineStage
 
     def __init__(self, data: OrderedDict):
         self.data: OrderedDict = data
-        self.root_node = TaskPipelineStage.create_stage_tree(data)
+        self.root_node = TaskPipelineStage.create_stage_tree(data, self.STAGE_KLS)
 
     def get_stage_by_name(self, name: str) -> TaskPipelineStage:
         def _inner(cur_node: TaskPipelineStage):
@@ -90,6 +99,7 @@ class Task(object):
         # extras
         self.name = self.config.name
         self.workspace = os.path.join(global_config.WORKSPACE, self.name)
+        os.makedirs(self.workspace, exist_ok=True)
 
     @classmethod
     def get_task_by_name(cls, task_name: str) -> "Task":
@@ -101,3 +111,8 @@ class Task(object):
         )
         task.load(task_config_path)
         return task
+
+    def __str__(self):
+        return f"<Task name={self.name} id={id(self)}>"
+
+    __repr__ = __str__

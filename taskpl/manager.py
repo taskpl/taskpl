@@ -1,27 +1,36 @@
-from taskpl.task import Task
-from taskpl.config import global_config
+from taskpl.task import Task, TaskPipelineStage, TaskPipeline
 
 import os
-import copy
 import typing
+from loguru import logger
+
+
+class JobPipelineStage(TaskPipelineStage):
+    def __init__(self, *args, **kwargs):
+        super(JobPipelineStage, self).__init__(*args, **kwargs)
+        self.result = None
+
+
+class JobPipeline(TaskPipeline):
+    STAGE_KLS = JobPipelineStage
 
 
 class Job(object):
     def __init__(self, task_type: Task, job_name: str):
         self.task_type: Task = task_type
+        self.job_pipeline = JobPipeline(task_type.pipeline.data)
+        # extend task
         self.job_name: str = job_name
         self.inited: bool = False
         # workspace
-        # todo weird!!
-        space = os.path.join(
-            global_config.WORKSPACE, self.task_type.name, self.job_name
-        )
-        self.workspace: str = space
+        self.workspace: str = os.path.join(self.task_type.workspace, job_name)
+        logger.info(f"job {job_name}: {self.__dict__}")
 
     def is_inited(self) -> bool:
         return os.path.isdir(self.workspace)
 
     def init(self):
+        """ create dirs """
         # workspace
         os.makedirs(os.path.dirname(self.workspace), exist_ok=True)
         os.makedirs(self.workspace)
@@ -37,32 +46,28 @@ class Job(object):
                     _create_dirs(v, sub_path)
                 # do nothing if end
 
-        _create_dirs(self.task_type.pipeline.data, self.workspace)
+        _create_dirs(self.job_pipeline.data, self.workspace)
 
     def status(self) -> dict:
-        stage_dict = copy.deepcopy(self.task_type.pipeline.data)
-
         for cur_dir, cur_sub_dirs, cur_files in os.walk(self.workspace):
             cur_dir = cur_dir.replace(self.workspace, "")
-            cur_dict = stage_dict
             for each in cur_dir.split(os.sep):
                 # the first is always empty
                 if not each:
                     continue
-                # ignore error
-                if each in cur_dict:
-                    tmp = cur_dict[each]
-                    if not isinstance(tmp, dict):
-                        break
-                    cur_dict = tmp
-            else:
-                # todo: filter?
-                cur_dict["result"] = bool(cur_files) or bool(cur_sub_dirs)
+                # get current stage
+                cur_stage = self.job_pipeline.get_stage_by_name(each)
+                if cur_stage:
+                    # now we have stage and its workspace
+                    logger.debug(f"current workspace: {cur_dir}")
+                    logger.debug(f"current stage: {cur_stage}")
+                    cur_stage.result = bool(cur_files) or bool(cur_sub_dirs)
 
-        return stage_dict
+        return self.job_pipeline.root_node
 
 
 class JobManager(object):
+    """ get status from disk """
     def is_job_existed(self, task_type: Task, job_name: str) -> bool:
         try:
             self.query_single_job(task_type, job_name)
