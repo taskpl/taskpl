@@ -30,5 +30,6 @@ setup(
         "fastapi",
         "pydantic",
         "uvicorn",
+        "loguru",
     ],
 )
