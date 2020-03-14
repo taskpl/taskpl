@@ -16,7 +16,16 @@ services:
     volumes:
       - taskpl_workspace:/taskpl_workspace
     ports:
-      - "9410:9410"
+      - "9647:9410"
+
+  taskpl-dashboard:
+    container_name: taskpl-dashboard
+    image: williamfzc/taskpl-dashboard
+    restart: always
+    ports:
+      - "9648:8010"
+    depends_on:
+      - taskpl
 
 volumes:
   taskpl_workspace:
