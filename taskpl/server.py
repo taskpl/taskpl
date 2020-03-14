@@ -1,6 +1,8 @@
 import uvicorn
 import os
 from fastapi import FastAPI
+from loguru import logger
+import sys
 
 from taskpl.manager import JobManager, Job
 from taskpl.task import Task
@@ -29,6 +31,7 @@ def job_create(*, task_name: str, job_name: str):
         job.init()
         return job
     except Exception as e:
+        logger.error(sys.exc_info()[0])
         return {"error": str(e)}
 
 
@@ -43,6 +46,7 @@ def job_retrieve(*, task_name: str, job_name: str):
         job.update_status()
         return job.to_list()
     except Exception as e:
+        logger.error(sys.exc_info()[0])
         return {"error": str(e)}
 
 
@@ -56,6 +60,7 @@ def job_all_retrieve(*, task_name: str):
         # todo job object contains too much contents
         return manager.query_all_job(task)
     except Exception as e:
+        logger.error(sys.exc_info()[0])
         return {"error": str(e)}
 
 
@@ -64,6 +69,7 @@ def task_retrieve(*, task_name: str):
     try:
         return Task.get_task_by_name(task_name)
     except Exception as e:
+        logger.error(sys.exc_info()[0])
         return {"error": str(e)}
 
 
@@ -77,6 +83,7 @@ def task_all_retrieve():
             if each.endswith(global_config.TASK_CONFIG_FILE_TYPE)
         ]
     except Exception as e:
+        logger.error(sys.exc_info()[0])
         return {"error": str(e)}
 
 
