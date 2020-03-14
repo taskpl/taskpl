@@ -40,7 +40,8 @@ def job_retrieve(*, task_name: str, job_name: str):
         # new
         manager = JobManager()
         job = manager.query_single_job(task, job_name)
-        return job.status()
+        job.update_status()
+        return job.to_list()
     except Exception as e:
         return {"error": str(e)}
 
@@ -73,7 +74,7 @@ def task_all_retrieve():
         return [
             os.path.splitext(each)[0]
             for each in os.listdir(global_config.SERVER_TASK_HOME)
-            if each.endswith("toml")
+            if each.endswith(global_config.TASK_CONFIG_FILE_TYPE)
         ]
     except Exception as e:
         return {"error": str(e)}

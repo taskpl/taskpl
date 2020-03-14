@@ -11,13 +11,13 @@ class BaseGate(object):
     def __init__(self):
         self.name = self.__class__.__name__
 
-    def check(self, job: "JobPipelineStage") -> bool:
+    def check(self, stage: "JobPipelineStage") -> bool:
         raise NotImplementedError
 
 
 class EmptyOrNotGate(BaseGate):
-    def check(self, job: "JobPipelineStage") -> bool:
-        return bool(os.listdir(job.workspace))
+    def check(self, stage: "JobPipelineStage") -> bool:
+        return bool(os.listdir(stage.workspace))
 
 
 def import_gate(name: str) -> typing.Optional[BaseGate]:

@@ -18,13 +18,14 @@ class JobPipelineStage(TaskPipelineStage):
             return
         os.makedirs(self.workspace, exist_ok=True)
 
-    def check_workspace(self):
-        # check and update result
-        # todo more filter here
+    def check_gate(self):
         if not self.workspace:
             logger.warning(f"job {self.name} 's workspace is empty")
             return
-        self.result = bool(os.listdir(self.workspace))
+        # check and update
+        self.result = True
+        for each in self.gate:
+            self.result = self.result and bool(each.check(self))
 
 
 class JobPipeline(TaskPipeline):
@@ -71,11 +72,13 @@ class Job(object):
 
     def update_status(self):
         for each in self.job_pipeline.loop_stages():
-            each.check_workspace()
+            each.check_gate()
 
-    def status(self) -> JobPipelineStage:
-        self.update_status()
-        return self.job_pipeline.root_node
+    def to_list(self) -> typing.List[JobPipelineStage]:
+        result = list()
+        for each in self.job_pipeline.loop_stages():
+            result.append(each)
+        return result
 
 
 class JobManager(object):
