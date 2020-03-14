@@ -1,4 +1,4 @@
-from taskpl.task import Task, TaskPipelineStage, TaskPipeline
+from taskpl.task import Task, TaskPipelineStage, TaskPipeline, TaskCompiler
 
 import os
 import typing
@@ -28,8 +28,13 @@ class JobPipelineStage(TaskPipelineStage):
             self.result = self.result and bool(each.check(self))
 
 
+class JobCompiler(TaskCompiler):
+    NODE_KLS = JobPipelineStage
+    ROOT_NODE_NAME = "root"
+
+
 class JobPipeline(TaskPipeline):
-    STAGE_KLS = JobPipelineStage
+    COMPILER = JobCompiler
 
 
 class Job(object):

@@ -12,7 +12,7 @@ class BaseGate(object):
         self.name = self.__class__.__name__
 
     def check(self, stage: "JobPipelineStage") -> bool:
-        raise NotImplementedError
+        raise NotImplementedError("you are calling an abstract class")
 
 
 class EmptyOrNotGate(BaseGate):
@@ -35,8 +35,4 @@ def import_gate(name: str) -> typing.Optional[BaseGate]:
 DefaultGate = EmptyOrNotGate
 
 
-__all__ = [
-    "BaseGate",
-    "EmptyOrNotGate",
-    "DefaultGate",
-]
+__all__ = ["BaseGate", "EmptyOrNotGate", "DefaultGate", "import_gate"]

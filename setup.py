@@ -25,11 +25,5 @@ setup(
         "Programming Language :: Python :: 3",
     ],
     python_requires=">=3.6",
-    install_requires=[
-        "toml",
-        "fastapi",
-        "pydantic",
-        "uvicorn",
-        "loguru",
-    ],
+    install_requires=["toml", "fastapi", "pydantic", "uvicorn", "loguru", "planter"],
 )
