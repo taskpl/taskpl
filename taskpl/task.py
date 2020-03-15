@@ -29,7 +29,7 @@ class TaskPipelineStage(Node):
         # special operations
         # gate
         assert isinstance(self.gate, list), "gates must be a list"
-        self.gate = [import_gate(each) for each in self.gate]
+        self.gate = [import_gate(each, self) for each in self.gate]
 
     def __str__(self):
         return f"<PipelineStage name={self.name} id={id(self)}>"
