@@ -86,8 +86,9 @@ class Job(object):
         _create_dirs(self.pipeline.data, self.workspace)
 
     def update_status(self):
-        for each in self.pipeline.loop_stages(without_root=True):
-            each.check_gate()
+        for _ in range(2):
+            for each in self.pipeline.loop_stages(without_root=True):
+                each.check_gate()
 
     def to_list(self) -> typing.List[JobPipelineStage]:
         result = list()
