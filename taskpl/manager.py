@@ -10,6 +10,7 @@ class JobPipelineStage(TaskPipelineStage):
         super(JobPipelineStage, self).__init__(*args, **kwargs)
         self.result: typing.Any = None
         self.workspace: str = ""
+        self.path_str = "/".join(self.path[1:])
 
     def init_workspace(self):
         logger.debug(f"init job workspace: {self.name}")
