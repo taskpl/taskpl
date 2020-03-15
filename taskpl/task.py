@@ -22,7 +22,7 @@ class TaskPipelineStage(Node):
         self.desc: str = ""
         self.strict: bool = True
         # todo how to send args to gate object?
-        self.gate: typing.List = ["DefaultGate", "SubMustGate"]
+        self.gate: typing.List = global_config.TASK_DEFAULT_GATE
         super(TaskPipelineStage, self).__init__(*args, **kwargs)
 
     def convert_special_attrs(self):

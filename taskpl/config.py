@@ -12,6 +12,7 @@ class _Config(object):
     # task
     TASK_ROOT_NAME = "root"
     TASK_CONFIG_FILE_TYPE = "toml"
+    TASK_DEFAULT_GATE = ["DefaultGate", "SubAllGate"]
 
 
 global_config = _Config()
