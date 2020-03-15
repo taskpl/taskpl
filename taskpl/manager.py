@@ -43,14 +43,15 @@ class Job(object):
         self.name: str = job_name
         # workspace
         self.workspace: str = os.path.join(self.task_type.workspace, job_name)
-        self.bind_workspace()
         self.init()
+        self.bind_workspace()
         # update
         self.update_status()
 
         logger.info(f"job {job_name}: {self.__dict__}")
 
     def bind_workspace(self):
+        # todo same stage name???
         # bind workspaces to stages
         for cur_dir, cur_sub_dirs, cur_files in os.walk(self.workspace):
             cur_dir = cur_dir.replace(self.workspace + os.sep, "")
@@ -72,8 +73,18 @@ class Job(object):
         os.makedirs(os.path.dirname(self.workspace), exist_ok=True)
         os.makedirs(self.workspace, exist_ok=True)
 
-        for each in self.pipeline.loop_stages(without_root=True):
-            each.init_workspace()
+        # sub dirs
+        def _create_dirs(stage_dict: dict, cur_path: str):
+            for k, v in stage_dict.items():
+                # not the end?
+                if isinstance(v, dict):
+                    # cur layer
+                    sub_path = os.path.join(cur_path, k)
+                    os.makedirs(sub_path, exist_ok=True)
+                    _create_dirs(v, sub_path)
+                # do nothing if end
+
+        _create_dirs(self.pipeline.data, self.workspace)
 
     def update_status(self):
         for each in self.pipeline.loop_stages(without_root=True):
