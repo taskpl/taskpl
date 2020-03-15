@@ -33,20 +33,16 @@ def read_root():
 @app.post("/api/v1/job/single")
 @error_wrap
 def job_create(*, task_name: str, job_name: str):
-    try:
-        # find
-        task = Task.get_task_by_name(task_name)
-        # new
-        manager = JobManager()
-        assert not manager.is_job_existed(
-            task, job_name
-        ), f"job {job_name} already existed"
-        job = Job(task, job_name)
-        job.init()
-        return job
-    except Exception as e:
-        logger.error(sys.exc_info()[0])
-        return {"error": str(e)}
+    # find
+    task = Task.get_task_by_name(task_name)
+    # new
+    manager = JobManager()
+    assert not manager.is_job_existed(
+        task, job_name
+    ), f"job {job_name} already existed"
+    job = Job(task, job_name)
+    job.init()
+    return job
 
 
 @app.get("/api/v1/job/single")
@@ -76,7 +72,7 @@ def job_retrieve_tree(*, task_name: str, job_name: str):
     job = job_retrieve(task_name=task_name, job_name=job_name)
     if isinstance(job, Exception):
         return job
-    return [job.pipeline.root]
+    return job.pipeline.root.sub_nodes
 
 
 @app.get("/api/v1/job/all")
