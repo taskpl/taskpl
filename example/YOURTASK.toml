@@ -1,0 +1,37 @@
+[config]
+name = "YOURTASK"
+
+[pipeline]
+  [pipeline.checkpoint1]
+  desc = "this is stage1"
+
+    [pipeline.checkpoint1.sub1]
+    desc = "haha"
+
+    [pipeline.checkpoint1.sub2]
+    desc = "haha"
+
+    [pipeline.checkpoint1.sub3]
+    desc = "haha"
+
+        [pipeline.checkpoint1.sub3.subsub1]
+        desc = "haha"
+
+  [pipeline.checkpoint2]
+  desc = "this is stage2"
+
+    [pipeline.checkpoint2.sub1]
+    gate = ["DefaultGate", "FileAllRequiredGate"]
+    FileAllRequiredGate = ["1.txt"]
+    desc = "haha"
+
+        [pipeline.checkpoint2.subsub1]
+        desc = "haha"
+
+  [pipeline."检查点3"]
+  desc = "this is stage3"
+    [pipeline."检查点3".sub1]
+    desc = "haha"
+
+        [pipeline."检查点3".subsub1]
+        desc = "haha"
