@@ -51,18 +51,16 @@ class Job(object):
         logger.info(f"job {job_name}: {self.__dict__}")
 
     def bind_workspace(self):
-        # todo same stage name???
         # bind workspaces to stages
         for cur_dir, cur_sub_dirs, cur_files in os.walk(self.workspace):
             cur_dir = cur_dir.replace(self.workspace + os.sep, "")
-            for each in cur_dir.split(os.sep):
-                # get current stage
-                cur_stage = self.pipeline.get_stage_by_name(each)
-                if cur_stage:
-                    # now we have stage and its workspace
-                    full_path = os.path.join(self.workspace, cur_dir)
-                    logger.debug(f"bind {full_path} to {cur_stage}")
-                    cur_stage.workspace = full_path
+
+            cur_stage = self.pipeline.get_node_by_path(cur_dir.split(os.sep))
+            if cur_stage:
+                # now we have stage and its workspace
+                full_path = os.path.join(self.workspace, cur_dir)
+                logger.debug(f"bind {full_path} to {cur_stage}")
+                cur_stage.workspace = full_path
 
     def is_inited(self) -> bool:
         return os.path.isdir(self.workspace) and bool(os.listdir(self.workspace))
