@@ -1,5 +1,14 @@
 version: '3'
 services:
+  fileserver:
+    container_name: fileserver
+    image: williamfzc/min_file_server
+    restart: always
+    volumes:
+      - taskpl_workspace:/usr/share/nginx/files
+    ports:
+      - "9645:80"
+
   filebrowser:
     container_name: filebrowser
     image: filebrowser/filebrowser
