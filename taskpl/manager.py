@@ -13,9 +13,6 @@ class JobPipelineStage(TaskPipelineStage):
 
     def init_workspace(self):
         logger.debug(f"init job workspace: {self.name}")
-        if not self.workspace:
-            logger.warning(f"job {self.name} 's workspace is empty")
-            return
         os.makedirs(self.workspace, exist_ok=True)
 
     def check_gate(self):
@@ -41,12 +38,15 @@ class Job(object):
     def __init__(self, task_type: Task, job_name: str):
         # init from task
         self.task_type: Task = task_type
-        self.job_pipeline = JobPipeline(task_type.pipeline.data)
+        self.pipeline = JobPipeline(task_type.pipeline.data)
         # extend task
-        self.job_name: str = job_name
+        self.name: str = job_name
         # workspace
         self.workspace: str = os.path.join(self.task_type.workspace, job_name)
         self.bind_workspace()
+        self.init()
+        # update
+        self.update_status()
 
         logger.info(f"job {job_name}: {self.__dict__}")
 
@@ -56,7 +56,7 @@ class Job(object):
             cur_dir = cur_dir.replace(self.workspace + os.sep, "")
             for each in cur_dir.split(os.sep):
                 # get current stage
-                cur_stage = self.job_pipeline.get_stage_by_name(each)
+                cur_stage = self.pipeline.get_stage_by_name(each)
                 if cur_stage:
                     # now we have stage and its workspace
                     full_path = os.path.join(self.workspace, cur_dir)
@@ -72,16 +72,16 @@ class Job(object):
         os.makedirs(os.path.dirname(self.workspace), exist_ok=True)
         os.makedirs(self.workspace, exist_ok=True)
 
-        for each in self.job_pipeline.loop_stages():
+        for each in self.pipeline.loop_stages(without_root=True):
             each.init_workspace()
 
     def update_status(self):
-        for each in self.job_pipeline.loop_stages():
+        for each in self.pipeline.loop_stages(without_root=True):
             each.check_gate()
 
     def to_list(self) -> typing.List[JobPipelineStage]:
         result = list()
-        for each in self.job_pipeline.loop_stages():
+        for each in self.pipeline.loop_stages(without_root=True):
             result.append(each)
         return result
 

@@ -2,7 +2,6 @@ import os
 import toml
 import typing
 from collections import OrderedDict
-from loguru import logger
 from planter import Tree, Node, Compiler
 
 from taskpl.config import global_config
@@ -26,7 +25,7 @@ class TaskPipelineStage(Node):
         self.gate: typing.List = ["DefaultGate"]
         super(TaskPipelineStage, self).__init__(*args, **kwargs)
 
-    def check_attrs(self):
+    def convert_special_attrs(self):
         # special operations
         # gate
         assert isinstance(self.gate, list), "gates must be a list"
@@ -56,9 +55,13 @@ class TaskPipeline(Tree):
 
         # handle special attrs
         for each in self.loop_stages():
-            each.check_attrs()
+            each.convert_special_attrs()
 
-    def loop_stages(self):
+    def loop_stages(self, without_root: bool = None):
+        if without_root:
+            it = self.dfs(self.root)
+            next(it)
+            return it
         return self.dfs(self.root)
 
     get_stage_by_name = Tree.get_node
