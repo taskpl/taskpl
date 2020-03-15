@@ -20,6 +20,13 @@ class EmptyOrNotGate(BaseGate):
         return bool(os.listdir(stage.workspace))
 
 
+class SubMustGate(BaseGate):
+    def check(self, stage: "JobPipelineStage") -> bool:
+        return all([
+            each.result for each in stage.sub_nodes
+        ])
+
+
 def import_gate(name: str) -> typing.Optional[BaseGate]:
     if name not in __all__:
         logger.warning(f"gate {name} not existed")
@@ -35,4 +42,4 @@ def import_gate(name: str) -> typing.Optional[BaseGate]:
 DefaultGate = EmptyOrNotGate
 
 
-__all__ = ["BaseGate", "EmptyOrNotGate", "DefaultGate", "import_gate"]
+__all__ = ["BaseGate", "EmptyOrNotGate", "DefaultGate", "SubMustGate", "import_gate"]
