@@ -1,14 +1,5 @@
 version: '3'
 services:
-  fileserver:
-    container_name: fileserver
-    image: williamfzc/min_file_server
-    restart: always
-    volumes:
-      - taskpl_workspace:/usr/share/nginx/files
-    ports:
-      - "9645:80"
-
   filebrowser:
     container_name: filebrowser
     image: filebrowser/filebrowser:v2.0.12
@@ -16,7 +7,7 @@ services:
     volumes:
       - taskpl_workspace:/srv
     ports:
-      - "9646:80"
+      - "20316:80"
 
   taskpl:
     container_name: taskpl
@@ -25,14 +16,14 @@ services:
     volumes:
       - taskpl_workspace:/taskpl_workspace
     ports:
-      - "9647:9410"
+      - "20317:9410"
 
   taskpl-dashboard:
     container_name: taskpl-dashboard
     image: williamfzc/taskpl-dashboard
     restart: always
     ports:
-      - "9648:8010"
+      - "20318:8010"
     depends_on:
       - taskpl
 
