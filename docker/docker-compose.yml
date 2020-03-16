@@ -11,7 +11,7 @@ services:
 
   filebrowser:
     container_name: filebrowser
-    image: filebrowser/filebrowser
+    image: filebrowser/filebrowser:v2.0.12
     restart: always
     volumes:
       - taskpl_workspace:/srv
